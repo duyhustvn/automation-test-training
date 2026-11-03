@@ -1,0 +1,767 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Training: Automation Test API - Playwright & Playwright BDD</title>
+
+    <!-- Reveal.js Themes & Styles -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reset.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/theme/dracula.min.css">
+
+    <!-- Code Syntax Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+
+    <style>
+      .reveal {
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      }
+      .reveal h1 { font-size: 2.2em; text-transform: none; }
+      .reveal h2 { font-size: 1.8em; text-transform: none; margin-bottom: 20px; }
+      .reveal h3 {
+        font-size: 1.35em;
+        color: #50fa7b;
+        text-transform: none;
+        margin-bottom: 12px;
+      }
+      .reveal pre {
+        width: 100%;
+        margin: 6px 0;
+        font-size: 0.52em;
+        box-shadow: none;
+      }
+      .reveal pre code {
+        padding: 8px 12px;
+        line-height: 1.35;
+        border-radius: 6px;
+        max-height: 520px;
+      }
+      .badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 8px;
+        font-size: 0.5em;
+        font-weight: bold;
+        vertical-align: middle;
+      }
+      .badge-dev { background: #bd93f9; color: #282a36; }
+      .badge-qa { background: #ff79c6; color: #282a36; }
+      .badge-best { background: #50fa7b; color: #282a36; }
+      .badge-warn { background: #ff5555; color: #fff; }
+
+      .highlight-box {
+        background: #44475a;
+        border-left: 5px solid #50fa7b;
+        padding: 8px 16px;
+        border-radius: 6px;
+        margin: 8px 0;
+        text-align: left;
+        font-size: 0.76em;
+        line-height: 1.45;
+      }
+
+      .warn-box {
+        background: #44475a;
+        border-left: 5px solid #ff5555;
+        padding: 8px 16px;
+        border-radius: 6px;
+        margin: 8px 0;
+        text-align: left;
+        font-size: 0.76em;
+        line-height: 1.45;
+      }
+
+      .slide-table {
+        font-size: 0.65em;
+        width: 100%;
+        margin-top: 15px;
+      }
+      .slide-table th {
+        background: #6272a4;
+        color: #f8f8f2;
+        padding: 8px;
+      }
+      .slide-table td {
+        background: #282a36;
+        padding: 8px;
+        border: 1px solid #44475a;
+      }
+
+      .flex-container {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        margin-top: 15px;
+      }
+      .flex-col {
+        flex: 1;
+        background: #282a36;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #6272a4;
+        font-size: 0.75em;
+        text-align: left;
+      }
+      code {
+        font-family: 'Fira Code', Consolas, Monaco, monospace !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+
+        <!-- SLIDE 1: TITLE -->
+        <section data-background-gradient="linear-gradient(to bottom, #1e1f29, #282a36)">
+          <h2>AUTOMATION TEST API</h2>
+          <h4 style="color: #8be9fd;">Từ Playwright Thuần đến Playwright BDD</h4>
+          <p style="font-size: 0.8em; color: #f1fa8c; margin-top: 30px;">
+            Thực chiến Thiết kế & Tối ưu cho Team <strong>Dev</strong> & <strong>Tester</strong>
+          </p>
+          <div style="margin-top: 40px;">
+            <span class="badge badge-dev">Developer</span>
+            <span class="badge badge-qa">QA / Tester</span>
+            <span class="badge badge-best">Best Practices</span>
+          </div>
+          <p style="font-size: 0.5em; color: #6272a4; margin-top: 30px;">
+            (Nhấn phím mũi tên phải ➡️ hoặc Space để chuyển slide | Nhấn 'F' để xem toàn màn hình)
+          </p>
+        </section>
+
+        <!-- SLIDE 2: MỤC TIÊU -->
+        <section>
+          <h3>🎯 Mục Tiêu Buổi Training</h3>
+          <ul style="font-size: 0.8em; line-height: 1.8;">
+            <li><strong>Tại sao lại là Playwright?</strong> Hiểu ưu thế vượt trội khi test API so với Postman.</li>
+            <li><strong>Thực chiến Playwright thuần:</strong> Cấu trúc test, gom nhóm, test isolation & chạy song song.</li>
+            <li><strong>Nâng cấp lên Playwright BDD:</strong> Biến kịch bản Gherkin thành tài liệu đặc tả nghiệp vụ.</li>
+            <li><strong>Vũ khí cho QA:</strong> Data-driven testing với <code>Scenario Outline</code>.</li>
+            <li><strong>Tránh Anti-patterns:</strong> Khắc phục lỗi biến toàn cục gây flaky test.</li>
+            <li><strong>Hạ tầng tự động:</strong> Cấu hình <code>webServer</code> tự khởi động backend.</li>
+          </ul>
+        </section>
+
+        <!-- SLIDE 3: THÁCH THỨC HIỆN TẠI -->
+        <section>
+          <h3>⚡ Thách Thức Khi Dùng Postman Cho Automation</h3>
+          <div class="flex-container">
+            <div class="flex-col">
+              <h5 style="color: #ffb86c;">Hạn Chế Của Postman</h5>
+              <ul>
+                <li><strong>Quản lý Git khó khăn:</strong> File collection JSON xuất ra rất dễ bị xung đột (conflict) khi nhiều người cùng commit.</li>
+                <li><strong>Khó tái sử dụng code:</strong> Script JavaScript trong tab Tests của Postman khó viết module hóa hay dùng thư viện ngoài.</li>
+                <li><strong>Tích hợp CI/CD hạn chế:</strong> Cồng kềnh khi đưa vào pipeline tự động hóa của team.</li>
+                <li><strong>Chi phí tăng cao:</strong> Bản quyền Postman ngày càng đắt đỏ với các tính năng chuyên sâu.</li>
+              </ul>
+            </div>
+            <div class="flex-col">
+              <h5 style="color: #50fa7b;">Rào Cản Dev ⟷ QA</h5>
+              <ul>
+                <li><strong>Lệch pha tài liệu:</strong> QA lưu test case trên Excel/Jira, Dev viết code test kỹ thuật riêng.</li>
+                <li><strong>Thiếu tiếng nói chung:</strong> Không có định dạng chuẩn (như Gherkin) để cùng hiểu hành vi nghiệp vụ.</li>
+                <li><strong>Bảo trì khó khăn:</strong> Khi API thay đổi, việc cập nhật thủ công trên Postman tốn nhiều công sức.</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- SLIDE 4: TẠI SAO LẠI LÀ PLAYWRIGHT? -->
+        <section>
+          <h3>🚀 Tại Sao Lại Là Playwright Cho API?</h3>
+          <div class="highlight-box">
+            <strong style="color: #50fa7b;">Lầm tưởng:</strong> "Playwright chỉ dùng để bật trình duyệt test UI!"<br>
+            <strong style="color: #8be9fd;">Thực tế:</strong> Playwright sở hữu module <code>request</code> API Client độc lập, cực nhẹ, siêu tốc độ!
+          </div>
+          <ul style="font-size: 0.75em; line-height: 1.8;">
+            <li>🏎️ <strong>Tốc độ cực nhanh:</strong> Không khởi động browser engine, gọi HTTP request trực tiếp.</li>
+            <li>🔄 <strong>Một hệ sinh thái duy nhất:</strong> Dùng chung runner cho cả API Testing và UI E2E Testing.</li>
+            <li>📊 <strong>Công cụ debug đỉnh cao:</strong> Playwright UI Mode, Inspector, Trace Viewer, HTML Report.</li>
+            <li>🧵 <strong>Parallel an toàn:</strong> Quản lý luồng worker cô lập, test hàng chục API trong vài giây.</li>
+            <li>⚙️ <strong>Tự động hóa toàn diện:</strong> Tích hợp sẵn <code>webServer</code> để bật backend lúc test.</li>
+          </ul>
+        </section>
+
+        <!-- SLIDE 5: KIẾN TRÚC DEMO TRONG REPO -->
+        <section>
+          <h3>🏗️ Kiến Trúc Demo Trong Bài Học</h3>
+          <pre><code class="language-text">automation-test-training/
+├── src/main.go               # Golang Backend + MongoDB (Port 3000)
+└── automation-test/
+    ├── playwright/           # Code-first: Viết test bằng JS thuần
+    └── playwright-bdd/       # Behavior-first: Kịch bản Gherkin + Steps</code></pre>
+          <div class="highlight-box" style="margin-top: 15px;">
+            <strong style="color: #8be9fd;">Danh Sách APIs Kiểm Thử:</strong>
+            <ul style="margin: 8px 0 0 20px; line-height: 1.6;">
+              <li><code>POST /api/register</code> &mdash; Đăng ký tài khoản (201 Created, 409 Conflict, 400 Bad Request)</li>
+              <li><code>POST /api/login</code> &mdash; Đăng nhập hệ thống (200 OK + Token, 401 Unauthorized)</li>
+              <li><code>DELETE /api/users</code> &mdash; Dọn dẹp dữ liệu kiểm thử (Reset data test)</li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- SLIDE 6: CẤU TRÚC TEST SUITE PLAYWRIGHT -->
+        <section>
+          <h3>📐 Cấu Trúc Một File Test API Chuẩn</h3>
+          <div class="flex-container">
+            <div class="flex-col" style="flex: 1.2;">
+              <pre style="margin: 0;"><code class="language-javascript">import { test, expect } from '@playwright/test';
+
+test.describe('Nhóm API Authentication', () => {
+  // 1. Hooks: Vòng đời chuẩn bị & dọn dẹp
+  test.beforeEach(async ({ request }) => { /* Setup */ });
+  test.afterEach(async ({ request }) => { /* Teardown */ });
+
+  // 2. Test Case & Fixture { request }
+  test('Tên kịch bản kiểm thử', async ({ request }) => {
+    // 3. Gọi HTTP Request (POST, GET, ...)
+    const res = await request.post('/api/...', { data });
+
+    // 4. Assertions: Kiểm chứng kết quả
+    expect(res.status()).toBe(200);
+    expect(await res.json()).toHaveProperty('token');
+  });
+});</code></pre>
+            </div>
+            <div class="flex-col" style="flex: 0.9; font-size: 0.72em;">
+              <h6 style="color: #50fa7b; margin-top: 0; font-size: 1.1em;">4 Thành Phần Cốt Lõi:</h6>
+              <ul style="line-height: 1.6; padding-left: 18px;">
+                <li><strong><code>test.describe</code></strong>: Gom nhóm các test case có cùng tính năng/ngữ cảnh.</li>
+                <li><strong><code>beforeEach / afterEach</code></strong>: Hooks tự động chuẩn bị và xóa sạch dữ liệu test.</li>
+                <li><strong><code>{ request }</code> Fixture</strong>: API Client độc lập do Playwright cung cấp, không cần mở Browser.</li>
+                <li><strong><code>expect(...)</code></strong>: Bộ matcher mạnh mẽ kiểm tra HTTP Status, Response Body, Headers.</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- SLIDE 7: VÍ DỤ THỰC CHIẾN -->
+        <section>
+          <h3>Playwright thuần</h3>
+          <pre><code class="language-javascript">import { test, expect } from '../fixtures/test.js';
+
+test('1. Đăng ký tài khoản & kiểm chứng MongoDB (201 Created)', async ({ request, db }) => {
+  const user = generateUser();
+
+  // 1. Gọi API đăng ký
+  const response = await request.post('/api/register', { data: user });
+  expect(response.status()).toBe(201);
+  const body = await response.json();
+  expect(body.message).toBe('Đăng ký thành công');
+
+  // 2. Query trực tiếp MongoDB qua Custom Fixture { db }
+  const userInDb = await db.collection('users').findOne({ username: user.username });
+  expect(userInDb).not.toBeNull();
+  expect(userInDb.password).not.toBe(user.password); // Mật khẩu không phải plain-text
+  expect(userInDb.password).toMatch(/^\$2[aby]\$/);  // Mật khẩu đã hash Bcrypt
+
+  // 3. Dọn dẹp sau test
+  await request.delete(`/api/users?username=${user.username}`);
+});</code></pre>
+        </section>
+
+        <!-- SLIDE 8: HƯỚNG DẪN CHẠY TEST CLI & UI MODE -->
+        <section>
+          <h3>Hướng dẫn chạy Test: CLI & UI Mode</h3>
+          <div class="flex-container" style="align-items: center; margin-top: 10px;">
+            <!-- Cột trái: Lệnh chạy -->
+            <div class="flex-col" style="flex: 0.85; font-size: 0.72em;">
+              <h6 style="color: #8be9fd; margin: 0 0 8px 0; font-size: 1.05em;">1. Chạy Dòng Lệnh (CLI):</h6>
+              <p style="margin: 0 0 4px 0;">Phù hợp chạy tự động, tích hợp CI/CD pipeline:</p>
+              <pre style="margin: 4px 0;"><code class="language-bash">npm test
+# hoặc dùng npx linh hoạt:
+npx playwright test</code></pre>
+
+              <h6 style="color: #50fa7b; margin: 14px 0 8px 0; font-size: 1.05em;">2. Chạy Giao Diện (UI Mode):</h6>
+              <p style="margin: 0 0 4px 0;">Xem timeline, soi request/response, time-travel:</p>
+              <pre style="margin: 4px 0;"><code class="language-bash">npm run test:ui
+# hoặc dùng npx:
+npx playwright test --ui</code></pre>
+
+              <div class="highlight-box" style="margin-top: 10px; font-size: 0.9em; padding: 6px 10px;">
+                💡 <em>Click nút Play ▶️ bên cạnh từng test để chạy lại tức thì mà không cần gõ lệnh!</em>
+              </div>
+            </div>
+
+            <!-- Cột phải: Hình ảnh UI Mode thực tế -->
+            <div class="flex-col" style="flex: 1.35; background: transparent; border: none; padding: 0; text-align: center;">
+              <img src="assets/ui-mode.png" alt="Playwright UI Mode Demo" style="width: 100%; max-height: 480px; object-fit: contain; border-radius: 8px; border: 2px solid #6272a4; box-shadow: 0 6px 20px rgba(0,0,0,0.6);" />
+              <p style="font-size: 0.55em; color: #f1fa8c; margin-top: 4px;">
+                Giao diện Playwright UI Mode: Soi chi tiết Timeline, Network Headers, Body & Dừng breakpoint code
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- SLIDE 9: KHÁI NIỆM FIXTURE -->
+        <section>
+          <h3>Fixture là gì?</h3>
+          <div class="highlight-box">
+            <strong style="color: #50fa7b;">Định nghĩa dễ hiểu:</strong> 
+            Trong ví dụ vừa rồi, <code>{ request, db }</code> chính là các <strong>Fixtures</strong> &mdash; tài nguyên được Playwright <em>chuẩn bị sẵn trước khi test chạy</em> và <em>tự động dọn dẹp sau khi test xong</em>.<br>
+            Playwright sử dụng kỹ thuật Dependency Injection để tự động "tiêm" các service vào test case.
+          </div>
+          <div class="flex-container">
+            <div class="flex-col">
+              <h6 style="color: #8be9fd; margin-top: 0; font-size: 1.05em;">📦 1. Built-in Fixture ({ request })</h6>
+              <ul style="line-height: 1.5; font-size: 0.82em; padding-left: 18px;">
+                <li>Có sẵn trong Playwright, gọi HTTP siêu nhanh không cần Browser.</li>
+                <li><strong>Cách import mặc định:</strong>
+                  <pre style="margin: 4px 0;"><code class="language-javascript">import { test, expect } from '@playwright/test';</code></pre>
+                </li>
+                <li>Chỉ dùng được các fixture có sẵn (<code>request</code>, <code>page</code>).</li>
+              </ul>
+            </div>
+            <div class="flex-col">
+              <h6 style="color: #f1fa8c; margin-top: 0; font-size: 1.05em;">🔌 2. Custom Fixture ({ db })</h6>
+              <ul style="line-height: 1.5; font-size: 0.82em; padding-left: 18px;">
+                <li>Do ta tự tạo bằng <code>test.extend()</code> để quản lý kết nối MongoDB.</li>
+                <li><strong>Quy tắc quan trọng (như thấy ở Slide 7):</strong>
+                  <pre style="margin: 4px 0;"><code class="language-javascript">import { test, expect } from '../fixtures/test.js';</code></pre>
+                  <em>(Bắt buộc import từ file custom fixture để dùng được { db })</em>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- SLIDE 10: KIỂM CHỨNG MONGODB -->
+        <section>
+          <h3>Custom Fixture <code>{ db }</code></h3>
+          <pre style="margin: 4px 0;"><code class="language-javascript" style="font-size: 0.95em; line-height: 1.3;">// fixtures/test.js
+import { test as base } from '@playwright/test';
+import { MongoClient } from 'mongodb';
+
+export const test = base.extend({
+  // Custom Fixture: Quản lý vòng đời kết nối MongoDB
+  db: async ({}, use) => {
+    // 1. SETUP: Mở kết nối trước khi test chạy
+    const client = new MongoClient('mongodb://localhost:27017');
+    await client.connect();
+
+    // 2. BÀN GIAO: Chuyển database cho test case sử dụng
+    await use(client.db('training_db'));
+
+    // 3. TEARDOWN: Tự động đóng kết nối khi test xong (dù Pass hay Fail)
+    await client.close();
+  },
+});
+
+export { expect } from '@playwright/test';</code></pre>
+        </section>
+
+        <!-- SLIDE 11: BEST PRACTICE - TEST ISOLATION -->
+        <section>
+          <h3>🛡️ Bài Học Kỹ Thuật: Test Isolation & Parallel</h3>
+          <div class="warn-box">
+            <strong>❌ Sai lầm phổ biến:</strong> Tất cả test cases đều dùng chung 1 username cố định <code>"testuser"</code>.<br>
+            Khi bật <code>workers: 4</code>, Test A vừa tạo user thì Test B gửi lệnh xóa ➔ <strong>Flaky test ngẫu nhiên!</strong>
+          </div>
+          <div class="highlight-box">
+            <strong>✅ Giải pháp chuẩn mực:</strong> Mỗi test case tự sinh dữ liệu độc lập (Dynamic Test Data):
+            <pre style="margin: 4px 0;"><code class="language-javascript">const generateUser = () => ({
+  username: `autouser_${Date.now()}_${Math.floor(Math.random() * 10000)}`,
+  password: 'password123',
+});</code></pre>
+            <p style="margin: 4px 0 0 0; color: #50fa7b;">👉 Chạy bao nhiêu luồng song song cũng không bao giờ đụng độ dữ liệu!</p>
+          </div>
+        </section>
+
+        <!-- SLIDE 12: CẤU HÌNH WEBSERVER -->
+        <section>
+          <h3>🤖 Tự Động Hóa Với <code>webServer</code></h3>
+          <p style="font-size: 0.7em;">Đừng bắt Tester hoặc CI/CD phải mở terminal gõ <code>go run ./src</code>!</p>
+          <pre><code class="language-javascript">// playwright.config.js
+export default defineConfig({
+  use: {
+    baseURL: process.env.BASE_URL || 'http://localhost:3000',
+    extraHTTPHeaders: { 'Content-Type': 'application/json' },
+  },
+  // Tự động kiểm tra và khởi động Go Backend nếu chưa bật
+  webServer: {
+    command: 'cd ../.. && go run ./src',
+    url: 'http://localhost:3000/health',
+    reuseExistingServer: !process.env.CI,
+    timeout: 10000,
+  },
+});</code></pre>
+          <p style="font-size: 0.65em; color: #50fa7b;">✅ Chỉ 1 lệnh <code>npm test</code>: Tự bật Server ➔ Tự chạy Test ➔ Tự tắt Server!</p>
+        </section>
+
+        <!-- SLIDE 13: PHẦN 2 - NÂNG CẤP LÊN PLAYWRIGHT BDD -->
+        <section>
+          <h3>🤝 Phần 2: Nâng Cấp Lên Playwright BDD</h3>
+          <p style="font-size: 0.72em; color: #f1fa8c; margin-top: 0;">Biến kịch bản kiểm thử thành <em>tài liệu đặc tả nghiệp vụ chung</em></p>
+          <div class="flex-container" style="align-items: stretch; margin-top: 10px;">
+            <!-- Cột trái: Kịch bản Scenario mẫu -->
+            <div class="flex-col" style="flex: 1.25;">
+              <h5 style="color: #ff79c6; margin-top: 0; font-size: 1em;">📝 Kịch Bản Gherkin Mẫu</h5>
+              <pre style="margin: 4px 0;"><code class="language-gherkin" style="font-size: 0.78em; line-height: 1.35;">Feature: Xác thực người dùng (Authentication API)
+
+  Scenario: 1. Đăng ký tài khoản mới thành công
+    When người dùng gửi yêu cầu đăng ký với tài khoản "user1" và mật khẩu "pass123"
+    Then mã phản hồi HTTP phải là 201
+    And thông báo trả về phải là "Đăng ký thành công"
+
+  Scenario: 2. Đăng ký thất bại khi tài khoản đã tồn tại
+    Given có một tài khoản "user2" với mật khẩu "pass123" đã tồn tại
+    When người dùng gửi yêu cầu đăng ký với tài khoản "user2" và mật khẩu "pass123"
+    Then mã phản hồi HTTP phải là 409
+    And thông báo lỗi phải là "Tài khoản đã tồn tại"</code></pre>
+            </div>
+
+            <!-- Cột phải: Giải thích thuật ngữ Gherkin tổng quát -->
+            <div class="flex-col" style="flex: 1.05;">
+              <h5 style="color: #8be9fd; margin-top: 0; font-size: 1em;">💡 Thuật Ngữ Cốt Lõi (Gherkin Syntax)</h5>
+              <ul style="line-height: 1.5; font-size: 0.8em; padding-left: 18px; margin: 4px 0;">
+                <li><strong style="color: #bd93f9;">Feature:</strong> Tên tính năng hoặc nghiệp vụ lớn của hệ thống.</li>
+                <li><strong style="color: #50fa7b;">Scenario:</strong> Một kịch bản kiểm thử hành vi cụ thể (tương đương 1 test case).</li>
+                <li><strong style="color: #f1fa8c;">Given:</strong> <em>Tiền điều kiện</em>, thiết lập trạng thái ban đầu của hệ thống (Context / Precondition).</li>
+                <li><strong style="color: #ffb86c;">When:</strong> <em>Hành động</em> hoặc sự kiện kích hoạt từ phía người dùng / client (Action / Trigger).</li>
+                <li><strong style="color: #ff79c6;">Then:</strong> <em>Kết quả kỳ vọng</em> hoặc phản hồi quan sát được để xác minh (Outcome / Assertion).</li>
+                <li><strong style="color: #8be9fd;">And:</strong> Liên từ nối thêm các bước tiền điều kiện, hành động hoặc xác minh.</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- SLIDE 14: CƠ CHẾ PLAYWRIGHT BDD -->
+        <section>
+          <h3>⚙️ Cơ Chế Hoạt Động Của Playwright BDD</h3>
+          <p style="font-size: 0.72em; color: #f1fa8c; margin-top: 0;">Kiến trúc <em>Code-Generation (Transpiler)</em> mang lại tốc độ thực thi tối đa</p>
+          <div class="flex-container" style="align-items: stretch; margin-top: 6px;">
+            <!-- Cột trái: Sơ đồ luồng biên dịch -->
+            <div class="flex-col" style="flex: 0.95; padding: 10px 12px; font-size: 0.68em;">
+              <h5 style="color: #8be9fd; margin: 0 0 6px 0; font-size: 1.1em;">🔄 Luồng Thực Thi (Workflow)</h5>
+              <pre style="margin: 2px 0;"><code class="language-text" style="font-size: 0.82em; line-height: 1.3;">✍️ File .feature (Gherkin)
+   ➔ [QA/Tester tự viết]
+              +
+✍️ File .steps.js (Logic code)
+   ➔ [Dev/Tester tự viết]
+              │
+              ▼ Lệnh: npx bddgen
+🤖 .features-gen/*.spec.js
+   ➔ [MÁY TỰ SINH 100%]
+              │
+              ▼ Lệnh: npx playwright test
+🚀 Runner Native Siêu Tốc!</code></pre>
+              <p style="font-size: 0.92em; color: #f1fa8c; margin: 4px 0 0 0; line-height: 1.3;">
+                💡 <em>Nếu thiếu step, <code>npx bddgen</code> sẽ in sẵn khung code (snippets) ra terminal để copy!</em>
+              </p>
+            </div>
+
+            <!-- Cột phải: Bản chất & Vai trò của 2 tệp -->
+            <div class="flex-col" style="flex: 1.25; padding: 10px 12px; font-size: 0.68em;">
+              <h5 style="color: #50fa7b; margin: 0 0 8px 0; font-size: 1.1em;">👥 Bản Chất & Vai Trò 2 Tệp</h5>
+
+              <div style="margin-bottom: 8px; background: rgba(255, 121, 198, 0.08); border-left: 3px solid #ff79c6; padding: 5px 8px; border-radius: 4px;">
+                <strong style="color: #ff79c6; font-size: 1.05em;">📄 File <code>.feature</code> (Nghiệp vụ):</strong>
+                <ul style="margin: 2px 0 0 0; padding-left: 16px; line-height: 1.35;">
+                  <li><strong>Bản chất:</strong> Kịch bản kiểm thử viết bằng ngôn ngữ tự nhiên (Given, When, Then).</li>
+                  <li><strong>Vai trò:</strong> Là tài liệu để QA, BA, Dev cùng hiểu và thống nhất nghiệp vụ trước khi code.</li>
+                </ul>
+              </div>
+
+              <div style="background: rgba(139, 233, 253, 0.08); border-left: 3px solid #8be9fd; padding: 5px 8px; border-radius: 4px;">
+                <strong style="color: #8be9fd; font-size: 1.05em;">💻 File <code>.steps.js</code> (Kỹ thuật):</strong>
+                <ul style="margin: 2px 0 0 0; padding-left: 16px; line-height: 1.35;">
+                  <li><strong>Bản chất:</strong> Code JS/TS hiện thực hóa từng câu chữ trong file <code>.feature</code>.</li>
+                  <li><strong>Vai trò:</strong> Thực thi logic test (gọi API HTTP, query DB MongoDB, assert <code>expect</code>). Do Dev/Tester viết.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SLIDE 15: ÁNH XẠ FEATURE SANG STEPS -->
+        <section>
+          <h3>🔗 Cơ Chế Ánh Xạ: <code>.feature</code> ➔ <code>.steps.js</code></h3>
+          <p style="font-size: 0.72em; color: #f1fa8c; margin-top: 0;">Playwright BDD ghép nối câu chữ kịch bản sang hàm code thực thi như thế nào?</p>
+          <div class="flex-container" style="align-items: stretch; margin-top: 8px;">
+            <!-- Cột trái: Kịch bản .feature -->
+            <div class="flex-col" style="flex: 0.95;">
+              <h5 style="color: #ff79c6; margin-top: 0; font-size: 0.95em;">📄 1. auth.feature (Kịch bản)</h5>
+              <pre style="margin: 4px 0;"><code class="language-gherkin" style="font-size: 0.76em; line-height: 1.4;">Scenario: 1. Đăng ký thành công
+
+  When người dùng gửi yêu cầu đăng ký
+       với tài khoản "user1"
+       và mật khẩu "pass123"
+
+  Then mã phản hồi HTTP phải là 201
+
+  And thông báo trả về phải là
+      "Đăng ký thành công"</code></pre>
+            </div>
+
+            <!-- Cột phải: Hàm mapping trong .steps.js -->
+            <div class="flex-col" style="flex: 1.35;">
+              <h5 style="color: #8be9fd; margin-top: 0; font-size: 0.95em;">💻 2. auth.steps.js (Hàm thực thi)</h5>
+              <pre style="margin: 4px 0;"><code class="language-javascript" style="font-size: 0.73em; line-height: 1.35;">// "user1" & "pass123" tự động map vào {string} ➔ username & password
+When('người dùng gửi yêu cầu đăng ký với tài khoản {string} và mật khẩu {string}', 
+  async ({ request, apiContext }, username, password) => {
+    apiContext.response = await request.post('/api/register', {
+      data: { username, password },
+    });
+});
+
+// 201 tự động map vào {int} ➔ expectedStatus
+Then('mã phản hồi HTTP phải là {int}', 
+  async ({ apiContext }, expectedStatus) => {
+    expect(apiContext.response.status()).toBe(expectedStatus);
+});</code></pre>
+            </div>
+          </div>
+
+          <div class="highlight-box" style="margin-top: 8px; font-size: 0.72em; padding: 8px 14px; line-height: 1.5;">
+            <strong>🎯 Nguyên tắc khớp dữ liệu (Cucumber Expressions):</strong><br>
+            • Chuỗi trong dấu ngoặc kép <code>"..."</code> ➔ tự động khớp vào <code>{string}</code> và truyền làm đối số cho hàm.<br>
+            • Số nguyên ➔ khớp vào <code>{int}</code>. Số thực ➔ <code>{float}</code>.<br>
+            • Tham số đầu tiên <code>{ request, apiContext, db }</code> luôn là <strong>Playwright Fixtures</strong> được tiêm vào tự động!
+          </div>
+        </section>
+
+        <!-- SLIDE 16: TÁC DỤNG TÁI SỬ DỤNG TRONG BDD -->
+        <section>
+          <h3>♻️ Tác Dụng Tái Sử Dụng: Viết Code 1 Lần, Dùng Mọi Nơi</h3>
+          <p style="font-size: 0.72em; color: #f1fa8c; margin-top: 0;">Sức mạnh lớn nhất của BDD: Dev viết 1 step, QA tự do lắp ghép ra vô số test case</p>
+          <div class="flex-container" style="align-items: stretch; margin-top: 8px;">
+            <!-- Cột trái: 1 Step code duy nhất trong .steps.js -->
+            <div class="flex-col" style="flex: 1.1; font-size: 0.72em;">
+              <h5 style="color: #8be9fd; margin: 0 0 6px 0; font-size: 1.05em;">💻 Dev chỉ code 1 lần trong <code>auth.steps.js</code></h5>
+              <pre style="margin: 4px 0;"><code class="language-javascript" style="font-size: 0.73em; line-height: 1.35;">// 1. Step gửi API đăng ký tổng quát:
+When('người dùng gửi yêu cầu đăng ký với tài khoản {string} và mật khẩu {string}', 
+  async ({ request, apiContext }, username, password) => {
+    apiContext.response = await request.post('/api/register', {
+      data: { username, password },
+    });
+});
+
+// 2. Step kiểm tra HTTP Status tổng quát:
+Then('mã phản hồi HTTP phải là {int}', 
+  async ({ apiContext }, expectedStatus) => {
+    expect(apiContext.response.status()).toBe(expectedStatus);
+});</code></pre>
+            </div>
+
+            <!-- Cột phải: QA tái sử dụng ở vô số kịch bản -->
+            <div class="flex-col" style="flex: 1.15; font-size: 0.72em;">
+              <h5 style="color: #50fa7b; margin: 0 0 6px 0; font-size: 1.05em;">📄 QA tái sử dụng trong <code>auth.feature</code></h5>
+              <pre style="margin: 4px 0;"><code class="language-gherkin" style="font-size: 0.72em; line-height: 1.3;"># Kịch bản 1: Đăng ký thành công
+When người dùng gửi yêu cầu đăng ký với tài khoản "u1" và mật khẩu "123"
+Then mã phản hồi HTTP phải là 201
+
+# Kịch bản 2: Tài khoản trùng lặp
+When người dùng gửi yêu cầu đăng ký với tài khoản "u2" và mật khẩu "123"
+Then mã phản hồi HTTP phải là 409
+
+# Kịch bản 3: Thiếu thông tin
+When người dùng gửi yêu cầu đăng ký với tài khoản "" và mật khẩu ""
+Then mã phản hồi HTTP phải là 400</code></pre>
+            </div>
+          </div>
+
+          <div class="highlight-box" style="margin-top: 8px; font-size: 0.7em; padding: 6px 12px; line-height: 1.45;">
+            <strong>🚀 Lợi ích thực tế cho đội ngũ Dev & QA:</strong><br>
+            • <strong>QA độc lập 100%:</strong> Khi bộ Steps đã hoàn thiện, QA có thể tự viết thêm hàng chục kịch bản kiểm thử mới mà <em>không cần nhờ Dev viết thêm code</em>.<br>
+            • <strong>Bảo trì siêu nhanh (DRY):</strong> Khi API thay đổi cách gọi, Dev chỉ cần sửa đúng <strong>1 hàm trong <code>.steps.js</code></strong>, tất cả các Scenario đều tự động cập nhật!
+          </div>
+        </section>
+
+        <!-- SLIDE 17: DATA-DRIVEN VỚI SCENARIO OUTLINE -->
+        <section>
+          <h3>🎯 <code>Scenario Outline</code>: Tái Sử Dụng Cả Kịch Bản</h3>
+          <p style="font-size: 0.68em; color: #f1fa8c; margin: 0 0 6px 0;">
+            Chạy cùng 1 kịch bản khuôn mẫu với nhiều bộ dữ liệu (Data-Driven Testing)
+          </p>
+
+          <div class="flex-container" style="align-items: stretch; margin-top: 4px;">
+            <!-- Cột trái: File auth.steps.js -->
+            <div class="flex-col" style="flex: 1.15; padding: 8px 10px; font-size: 0.65em;">
+              <h5 style="color: #8be9fd; margin: 0 0 6px 0; font-size: 1.05em;">💻 1. <code>auth.steps.js</code> (Step thông thường)</h5>
+              <pre style="margin: 0;"><code class="language-javascript" style="font-size: 0.72em; line-height: 1.35;">// Dev KHÔNG cần viết thêm hàm mới nào!
+When('người dùng gửi yêu cầu đăng nhập với tài khoản {string} và mật khẩu {string}', 
+  async ({ request, apiContext }, username, password) => {
+    apiContext.response = await request.post('/api/login', {
+      data: { username, password },
+    });
+});
+
+Then('mã phản hồi HTTP phải là {int}', 
+  async ({ apiContext }, expectedStatus) => {
+    expect(apiContext.response.status()).toBe(expectedStatus);
+});
+
+Then('kết quả phải chứa token {string}', 
+  async ({ apiContext }, hasToken) => { ... });</code></pre>
+            </div>
+
+            <!-- Cột phải: File auth.feature với Scenario Outline -->
+            <div class="flex-col" style="flex: 1.25; padding: 8px 10px; font-size: 0.65em;">
+              <h5 style="color: #50fa7b; margin: 0 0 6px 0; font-size: 1.05em;">📄 2. <code>auth.feature</code> (Scenario Outline)</h5>
+              <pre style="margin: 0;"><code class="language-gherkin" style="font-size: 0.72em; line-height: 1.35;">Scenario Outline: 4. Đăng nhập hệ thống
+  Given có một tài khoản "bdd_user" với mật khẩu "correct_password" đã tồn tại
+  When người dùng gửi yêu cầu đăng nhập với tài khoản "bdd_user" và mật khẩu "&lt;password&gt;"
+  Then mã phản hồi HTTP phải là &lt;status_code&gt;
+  And kết quả phải chứa token "&lt;has_token&gt;"
+
+  Examples:
+    | password         | status_code | has_token |
+    | correct_password | 200         | true      |
+    | wrong_password   | 401         | false     |
+    |                  | 400         | false     |</code></pre>
+            </div>
+          </div>
+
+          <div class="highlight-box" style="margin-top: 6px; font-size: 0.65em; padding: 5px 12px; line-height: 1.35;">
+            <strong>💡 Điểm mấu chốt:</strong> Dev <strong>không cần viết hàm step mới</strong> cho <code>Scenario Outline</code>! Playwright BDD tự động đọc từng dòng trong bảng <code>Examples</code> để tiêm thẳng giá trị vào các tham số <code>{string}</code>, <code>{int}</code> của các hàm step có sẵn.
+          </div>
+        </section>
+
+        <!-- SLIDE 12: ANTI-PATTERN TRONG BDD -->
+        <section>
+          <h3>⚠️ Anti-Pattern Cần Tránh: Biến Toàn Cục</h3>
+          <div class="warn-box">
+            <strong>❌ CỰC KỲ NGUY HIỂM:</strong> Khai báo biến toàn cục ở đầu file step:
+            <pre style="margin: 5px 0;"><code class="language-javascript">let authToken; // DÙNG CHUNG CẢ MODULE
+When('đăng nhập', async () => { authToken = res.token; });
+// Khi chạy parallel, các test case ghi đè token của nhau!</code></pre>
+          </div>
+          <div class="highlight-box">
+            <strong>✅ GIẢI PHÁP:</strong> Dùng Playwright Custom Fixture (<code>apiContext</code>):
+            <pre style="margin: 5px 0;"><code class="language-javascript">export const test = base.extend({
+  apiContext: async ({}, use) => {
+    // Mỗi Scenario nhận 1 context riêng biệt, hoàn toàn cô lập
+    await use({ username: '', response: null, responseBody: null });
+  },
+});</code></pre>
+          </div>
+        </section>
+
+        <!-- SLIDE 19: BẢNG LỆNH NPX -->
+        <section>
+          <h3>⚡ Tra Cứu Lệnh <code>npx</code></h3>
+          <table class="slide-table" style="font-size: 0.78em; margin-top: 20px;">
+            <thead>
+              <tr>
+                <th style="width: 38%; padding: 10px 16px;">Thao tác</th>
+                <th style="width: 62%; padding: 10px 16px;">Lệnh npx</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding: 10px 16px;"><strong>Chạy toàn bộ test</strong></td>
+                <td style="padding: 10px 16px;"><code style="color: #50fa7b;">npx playwright test</code></td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 16px;"><strong>Bật UI Mode trực quan</strong></td>
+                <td style="padding: 10px 16px;"><code style="color: #50fa7b;">npx playwright test --ui</code></td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 16px;"><strong>Lọc 1 test case cụ thể</strong></td>
+                <td style="padding: 10px 16px;"><code style="color: #50fa7b;">npx playwright test -g "Đăng ký"</code></td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 16px;"><strong>Chạy từng bước (Debug Mode)</strong></td>
+                <td style="padding: 10px 16px;"><code style="color: #50fa7b;">npx playwright test --debug</code></td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 16px;"><strong>Xem báo cáo HTML chi tiết</strong></td>
+                <td style="padding: 10px 16px;"><code style="color: #50fa7b;">npx playwright show-report</code></td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 16px;"><strong>BDD: Biên dịch & chạy</strong></td>
+                <td style="padding: 10px 16px;"><code style="color: #50fa7b;">npx bddgen && npx playwright test</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- SLIDE 14: SO SÁNH QUYẾT ĐỊNH -->
+        <section>
+          <h3>⚖️ Khi Nào Chọn Playwright Thuần vs BDD?</h3>
+          <table class="slide-table">
+            <thead>
+              <tr>
+                <th>Tiêu chí</th>
+                <th>Playwright Thuần</th>
+                <th>Playwright BDD</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Người dùng chính</strong></td>
+                <td>Dev, Automation QA</td>
+                <td>Manual QA, BA, Product Owner, Dev</td>
+              </tr>
+              <tr>
+                <td><strong>Mục đích kiểm thử</strong></td>
+                <td>API kỹ thuật, Microservices nội bộ</td>
+                <td>Luồng nghiệp vụ User Story, E2E flow</td>
+              </tr>
+              <tr>
+                <td><strong>Chi phí bảo trì</strong></td>
+                <td>Thấp (chỉ sửa code test)</td>
+                <td>Trung bình (duy trì cả .feature và .steps)</td>
+              </tr>
+              <tr>
+                <td><strong>Tài liệu & Báo cáo</strong></td>
+                <td>Code-oriented</td>
+                <td>Nghiệp vụ trực quan, thân thiện cho sếp</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- SLIDE 15: MINI CHALLENGE -->
+        <section>
+          <h3>🧪 Mini Challenge Cho Cặp Dev & Tester</h3>
+          <div class="highlight-box">
+            <strong>Yêu cầu nghiệp vụ mới:</strong><br>
+            Kiểm tra kịch bản đăng ký nhưng gửi mật khẩu rỗng: <code>username="testuser"</code>, <code>password=""</code>.<br>
+            ➔ Hệ thống phải phản hồi HTTP <code>400 Bad Request</code> kèm thông báo <code>"Username và password không được để trống"</code>.
+          </div>
+          <div class="flex-container">
+            <div class="flex-col">
+              <strong style="color: #ff79c6;">Tester làm:</strong>
+              <p>Mở <code>auth.feature</code>, viết Scenario mới bằng Gherkin.</p>
+            </div>
+            <div class="flex-col">
+              <strong style="color: #bd93f9;">Dev làm:</strong>
+              <p>Chạy <code>npx bddgen</code> kiểm tra mapping và thực thi test!</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- SLIDE 16: Q&A -->
+        <section data-background-gradient="linear-gradient(to bottom, #1e1f29, #282a36)">
+          <h2>HỎI & ĐÁP (Q & A)</h2>
+          <p style="color: #50fa7b; font-size: 1.2em; margin-top: 30px;">Cảm ơn mọi người đã tham gia buổi chia sẻ!</p>
+          <div style="font-size: 0.7em; color: #6272a4; margin-top: 50px;">
+            <p>Toàn bộ source code mẫu và tài liệu có sẵn trong repo:</p>
+            <p><code>automation-test-training/</code></p>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <!-- Reveal.js Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/highlight/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/notes/notes.min.js"></script>
+    <script>
+      Reveal.initialize({
+        hash: true,
+        slideNumber: 'c/t',
+        transition: 'slide',
+        width: 1280,
+        height: 720,
+        margin: 0.05,
+        minScale: 0.2,
+        maxScale: 2.0,
+        plugins: [ RevealHighlight, RevealNotes ]
+      });
+    </script>
+  </body>
+</html>
