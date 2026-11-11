@@ -1,0 +1,89 @@
+services:
+  # ==========================================
+  # MongoDB Service (Database lưu trữ dữ liệu)
+  # ==========================================
+  mongo:
+    image: mongo:7.0
+    container_name: training-mongo
+    restart: unless-stopped
+    ports:
+      - "${MONGO_PORT:-27017}:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "echo 'db.runCommand(\"ping\").ok' | mongosh localhost:27017/test --quiet"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  # ==========================================
+  # Backend API Service (Go HTTP Server)
+  # ==========================================
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: training-backend
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017
+      - PORT=3000
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 3s
+
+  # =======================================================
+  # Test Runner: Playwright Thuần (Dành cho chạy test Docker)
+  # =======================================================
+  test-playwright:
+    image: node:20-alpine
+    container_name: training-test-playwright
+    user: "${UID:-1000}:${GID:-1000}"
+    working_dir: /work/automation-test/playwright
+    volumes:
+      - .:/work
+    environment:
+      - BASE_URL=http://backend:3000
+      - MONGO_URI=mongodb://mongo:27017
+      - CI=true
+      - HOME=/tmp
+    depends_on:
+      backend:
+        condition: service_healthy
+    profiles:
+      - test
+    command: sh -c "npm install && npx playwright test"
+
+  # =======================================================
+  # Test Runner: Playwright BDD (Dành cho chạy test Docker)
+  # =======================================================
+  test-playwright-bdd:
+    image: node:20-alpine
+    container_name: training-test-playwright-bdd
+    user: "${UID:-1000}:${GID:-1000}"
+    working_dir: /work/automation-test/playwright-bdd
+    volumes:
+      - .:/work
+    environment:
+      - BASE_URL=http://backend:3000
+      - MONGO_URI=mongodb://mongo:27017
+      - CI=true
+      - HOME=/tmp
+    depends_on:
+      backend:
+        condition: service_healthy
+    profiles:
+      - test
+    command: sh -c "npm install && npx bddgen && npx playwright test"
+
+volumes:
+  mongo_data:

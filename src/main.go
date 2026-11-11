@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -54,7 +55,13 @@ func main() {
 	http.HandleFunc("/api/login", loginHandler)
 	http.HandleFunc("/api/users", usersHandler) // Phục vụ clean-up dữ liệu khi test
 
-	port := ":3000"
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "3000"
+	}
+	if !strings.HasPrefix(port, ":") {
+		port = ":" + port
+	}
 	fmt.Printf("🚀 Server đang chạy tại http://localhost%s\n", port)
 	log.Fatal(http.ListenAndServe(port, nil))
 }

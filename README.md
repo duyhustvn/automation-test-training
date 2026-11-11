@@ -1,44 +1,126 @@
 # Hướng Dẫn Automation Test API: Playwright & Playwright BDD
 
-Tài liệu hướng dẫn thực hành và tài liệu mẫu dành cho buổi training Automation Test API cho thành viên **Team Dev & Tester**.
+Tài liệu hướng dẫn thực hành và tài liệu mẫu chuẩn mực dành cho buổi training Automation Test API cho thành viên **Team Dev & Tester**.
 
 ---
 
-## 1. Yêu Cầu Môi Trường (Prerequisites)
+## ⚡ 1. Khởi Động Nhanh (Quick Start với Docker)
 
-- **Go**: >= 1.25 (Để chạy backend API)
-- **Node.js**: >= 18.x (Khuyên dùng LTS hoặc mới hơn)
-- **MongoDB**: Đang chạy tại `localhost:27017` (Mặc định không cần mật khẩu)
-  > *Gợi ý chạy nhanh bằng Docker:*
-  > ```bash
-  > docker run -d --name mongo-training -p 27017:27017 mongo:7.0
-  > ```
+Chỉ cần cài sẵn **Docker** & **Docker Compose**, bất kỳ ai clone repo về cũng có thể chạy ngay toàn bộ môi trường Backend + Database mà không cần cài đặt Go hay MongoDB trên máy cá nhân:
+
+### Bước 1: Khởi động hệ thống (Backend API & MongoDB)
+```bash
+docker compose up -d
+```
+> [!TIP]
+> Lệnh trên sẽ tự động:
+> 1. Kéo image và khởi chạy **MongoDB 7.0** với Healthcheck.
+> 2. Build multi-stage image siêu nhẹ (~10MB) cho **Go Backend** qua `Dockerfile`.
+> 3. Chờ MongoDB khỏe mạnh (`healthy`) rồi mới bật Backend tại cổng `3000`.
+
+### Bước 2: Kiểm tra tình trạng Server
+```bash
+curl http://localhost:3000/health
+# Kết quả phản hồi: {"message":"OK"}
+```
+
+### Bước 3: Chạy Kiểm Thử Tự Động (Chọn 1 trong 2 cách)
+
+#### Cách A: Chạy Test trực tiếp bằng Docker (Không cần cài Node.js trên máy)
+Dự án đã định nghĩa sẵn các service test runner trong `docker-compose.yml`:
+```bash
+# 1. Chạy bộ kiểm thử Playwright Thuần (Code-first)
+docker compose --profile test run --rm test-playwright
+
+# 2. Chạy bộ kiểm thử Playwright BDD (Behavior-Driven)
+docker compose --profile test run --rm test-playwright-bdd
+```
+
+#### Cách B: Chạy Test trên máy Host (Dành cho việc viết code thực hành & mở giao diện UI/Debug)
+Yêu cầu máy bạn đã cài **Node.js >= 18.x**:
+```bash
+# 1. Với Playwright Thuần:
+cd automation-test/playwright
+npm install
+npm test            # hoặc npm run test:ui để mở UI Mode
+
+# 2. Với Playwright BDD:
+cd automation-test/playwright-bdd
+npm install
+npm test            # hoặc npm run test:ui để mở UI Mode
+```
+
+### Bước 4: Dừng môi trường khi hoàn thành
+```bash
+docker compose down
+```
+*(Nếu muốn xóa cả volume dữ liệu MongoDB: `docker compose down -v`)*
 
 ---
 
-## 2. Kiến Trúc Dự Án
+## 🛠️ 2. Yêu Cầu Môi Trường (Prerequisites)
+
+| Thành phần | Khi dùng Docker (Khuyên dùng) | Khi chạy trực tiếp trên Host (Standalone) |
+| :--- | :--- | :--- |
+| **Docker & Docker Compose** | Docker v20+ & Compose v2+ *(Bắt buộc)* | Không bắt buộc |
+| **Go** | Không cần (chạy trong container) | Go >= 1.25 *(Để biên dịch Backend)* |
+| **Node.js** | Không cần (có thể chạy qua Docker runner) | Node.js >= 18.x *(Dành cho dev test, UI mode)* |
+| **MongoDB** | Tự động chạy qua Docker Compose | Cần MongoDB lắng nghe tại `localhost:27017` |
+
+---
+
+## 📁 3. Kiến Trúc Dự Án
 
 ```text
 automation-test-training/
+├── Dockerfile                   # Multi-stage Dockerfile cho Go Backend API (~10MB)
+├── docker-compose.yml           # Khởi chạy MongoDB, Backend API và Docker Test Runners
+├── .dockerignore                # Tối ưu hóa dung lượng build context Docker
+├── .env.example                 # Biến môi trường mẫu (PORT, MONGO_PORT)
 ├── src/
 │   └── main.go                  # Go Backend API (Register, Login, MongoDB)
 ├── automation-test/
 │   ├── playwright/              # Dự án 1: Playwright Thuần (Code-first)
+│   │   ├── fixtures/            # Custom fixture kết nối trực tiếp MongoDB
+│   │   ├── tests/               # Test suites (auth.spec.js)
+│   │   └── playwright.config.js # Cấu hình Playwright & auto webServer
 │   └── playwright-bdd/          # Dự án 2: Playwright BDD (Behavior-Driven)
+│       ├── features/            # Kịch bản kiểm thử Gherkin (.feature)
+│       ├── steps/               # Ánh xạ Given/When/Then & MongoDB assertions
+│       └── playwright.config.js # Cấu hình BDD generation & test runner
 ├── slides/
 │   ├── index.html               # Slide trình chiếu tương tác (Reveal.js)
 │   └── slides.md                # Slide định dạng Markdown (Marp / PPTX)
 ├── postman/
-│   └── api-training.postman_collection.json # Collection demo Postman
+│   └── api-training.postman_collection.json # Collection demo đối chiếu Postman
 └── README.md
 ```
 
 > [!NOTE]
-> Trong file `playwright.config.js` của cả 2 dự án đã được cấu hình tính năng **`webServer`**. Khi bạn gõ lệnh chạy test, Playwright sẽ **tự động kiểm tra và khởi động Go backend** nếu server chưa chạy! Bạn không bắt buộc phải bật server thủ công.
+> Trong file `playwright.config.js` của cả 2 dự án đã được cấu hình tính năng thông minh:
+> - Nếu Backend đang chạy sẵn (qua Docker Compose), Playwright sẽ tự động kết nối và **tái sử dụng server**.
+> - Nếu bạn chạy test trực tiếp trên máy Host mà quên bật server, tính năng **`webServer`** sẽ tự động biên dịch và khởi chạy Go backend thay bạn!
 
 ---
 
-## 📽️ Slide Trình Chiếu Cho Buổi Training
+## ⚙️ 4. Tùy Biến Cổng (Khi Bị Trùng Cổng Trên Máy)
+
+Nếu máy tính cá nhân của bạn đã có một phiên bản MongoDB đang dùng cổng `27017` hoặc cổng `3000` đang bị ứng dụng khác chiếm dụng:
+
+1. Sao chép file cấu hình môi trường:
+   ```bash
+   cp .env.example .env
+   ```
+2. Mở file `.env` và đổi cổng theo ý muốn:
+   ```env
+   PORT=3000
+   MONGO_PORT=27018
+   ```
+3. Chạy `docker compose up -d`, Docker Compose sẽ tự động áp dụng cấu hình cổng mới!
+
+---
+
+## 📽️ 5. Slide Trình Chiếu Cho Buổi Training
 
 Dự án đã chuẩn bị sẵn bộ Slide hoàn chỉnh tại thư mục `slides/`:
 
@@ -56,7 +138,7 @@ Dự án đã chuẩn bị sẵn bộ Slide hoàn chỉnh tại thư mục `slid
 
 ---
 
-## 📮 Postman Collection Demo
+## 📮 6. Postman Collection Demo
 
 Dự án cung cấp sẵn file Postman Collection tại:  
 👉 [postman/api-training.postman_collection.json](file:///home/vbox/projects/automation-test-training/postman/api-training.postman_collection.json)
@@ -69,7 +151,7 @@ Dự án cung cấp sẵn file Postman Collection tại:
 
 ---
 
-## 💡 Phân Biệt Giữa Lệnh `npm` và `npx` Trong Testing
+## 💡 7. Phân Biệt Giữa Lệnh `npm` và `npx` Trong Testing
 
 Khi làm việc với Playwright, bạn có 2 cách thực thi lệnh:
 
@@ -78,9 +160,9 @@ Khi làm việc với Playwright, bạn có 2 cách thực thi lệnh:
 
 ---
 
-## 3. Hướng Dẫn Chạy: Playwright Thuần (`automation-test/playwright`)
+## 🚀 8. Hướng Dẫn Chạy: Playwright Thuần (`automation-test/playwright`)
 
-Dành cho các bạn thích viết test script trực tiếp bằng JavaScript/TypeScript (phù hợp với Dev và Automation Engineer).
+Dành cho các bạn thích viết test script trực tiếp bằng JavaScript/TypeScript (phù hợp với Dev và Automation QA).
 
 ### Bước 1: Di chuyển vào thư mục và cài đặt thư viện
 ```bash
@@ -92,7 +174,7 @@ npm install
 
 | Nhu cầu kiểm thử | Cách 1: Dùng lệnh `npm` | Cách 2: Dùng lệnh `npx` (Linh hoạt) | Ghi chú & Giải thích |
 | :--- | :--- | :--- | :--- |
-| **Chạy toàn bộ test** | `npm test` | `npx playwright test` | Chạy 6 test cases song song (parallel) bao gồm kiểm chứng MongoDB |
+| **Chạy toàn bộ test** | `npm test` | `npx playwright test` | Chạy 5 test cases song song (parallel) bao gồm kiểm chứng MongoDB |
 | **Giao diện trực quan (UI Mode)** | `npm run test:ui` | `npx playwright test --ui` | Mở giao diện trực quan, soi từng request/response, timeline |
 | **Chạy chế độ Debug từng bước** | `npm run test:debug` | `npx playwright test --debug` | Bật Playwright Inspector để debug từng dòng lệnh |
 | **Xem báo cáo HTML** | `npm run report` | `npx playwright show-report` | Mở HTML report sau khi test hoàn tất |
@@ -103,7 +185,7 @@ npm install
 
 ---
 
-## 4. Hướng Dẫn Chạy: Playwright BDD (`automation-test/playwright-bdd`)
+## 🥒 9. Hướng Dẫn Chạy: Playwright BDD (`automation-test/playwright-bdd`)
 
 Dành cho mô hình cộng tác giữa **Product Owner / Business Analyst / Tester / Dev**, sử dụng kịch bản Gherkin (`Given - When - Then`).
 
@@ -136,7 +218,7 @@ npm install
 
 ---
 
-## 5. Hướng Dẫn Thêm Kịch Bản Mới Trong Playwright BDD
+## ✍️ 10. Hướng Dẫn Thêm Kịch Bản Mới Trong Playwright BDD
 
 Khi cần bổ sung thêm kịch bản nghiệp vụ mới:
 
@@ -152,16 +234,12 @@ Khi cần bổ sung thêm kịch bản nghiệp vụ mới:
    - Nếu kịch bản có step hoàn toàn mới, khi chạy `npx bddgen`, công cụ sẽ in sẵn code mẫu (snippets) để bạn sao chép vào `auth.steps.js`.
 3. **Chạy kiểm thử:**
    ```bash
-   # Cách qua npm:
    npm test
-
-   # Hoặc cách qua npx:
-   npx bddgen && npx playwright test
    ```
 
 ---
 
-## 6. So Sánh Nhanh Dành Cho Buổi Thảo Luận Team
+## ⚖️ 11. So Sánh Nhanh Dành Cho Buổi Thảo Luận Team
 
 | Tiêu chí | Playwright Thuần | Playwright BDD |
 | :--- | :--- | :--- |

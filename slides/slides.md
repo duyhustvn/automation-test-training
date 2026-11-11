@@ -210,25 +210,7 @@ export { expect } from '@playwright/test';
 
 ---
 
-## 🛡️ Best Practice 1: Test Isolation Khi Chạy Song Song
-
-### Vấn đề:
-Khi chạy 5 tests với `workers: 4`, nếu tất cả dùng chung username `"test_user"`:
-👉 **Race Condition**: Test A xóa user trong khi Test B đang kiểm tra đăng nhập ➔ **FLAKY TEST!**
-
-### Giải pháp:
-```javascript
-// Sinh username động theo timestamp
-const generateUser = () => ({
-  username: `user_${Date.now()}_${Math.floor(Math.random() * 10000)}`,
-  password: 'password123',
-});
-```
-✅ Mỗi worker sở hữu tập dữ liệu độc lập hoàn toàn.
-
----
-
-## 🤖 Best Practice 2: Tự Động Bật Server với `webServer`
+## 🤖 Tự Động Hóa Với `webServer`
 
 Đừng bắt tester hay CI/CD phải nhớ gõ `go run ./src` ở terminal khác!
 
@@ -416,7 +398,25 @@ Dev **không cần viết thêm hàm mới** cho `Scenario Outline`! Playwright 
 
 ---
 
-## ⚠️ Anti-Pattern Nguy Hiểm Trong BDD: Biến Toàn Cục
+## 🛡️ Bài Học Kỹ Thuật: Test Isolation & Parallel
+
+### Vấn đề:
+Khi chạy 5 tests với `workers: 4`, nếu tất cả dùng chung username `"test_user"`:
+👉 **Race Condition**: Test A xóa user trong khi Test B đang kiểm tra đăng nhập ➔ **FLAKY TEST!**
+
+### Giải pháp:
+```javascript
+// Sinh username động theo timestamp
+const generateUser = () => ({
+  username: `autouser_${Date.now()}_${Math.floor(Math.random() * 10000)}`,
+  password: 'password123',
+});
+```
+✅ Mỗi worker sở hữu tập dữ liệu độc lập hoàn toàn.
+
+---
+
+## ⚠️ Anti-Pattern Cần Tránh: Biến Toàn Cục
 
 ❌ **SAI (Gây xung đột state khi chạy parallel):**
 ```javascript
@@ -449,27 +449,5 @@ export const test = base.extend({
 
 ---
 
-## ⚖️ Bảng Quyết Định: Khi Nào Chọn Gì?
-
-| Tiêu chí | Playwright Thuần | Playwright BDD |
-| :--- | :--- | :--- |
-| **Đối tượng tham gia** | Chỉ Dev & Automation Tester | Cả BA, Manual QA, PO & Dev |
-| **Bản chất kiểm thử** | Unit API, Integration sâu, kỹ thuật | Luồng nghiệp vụ End-to-End |
-| **Chi phí bảo trì** | Thấp hơn (chỉ sửa code test) | Thêm bước mapping `.feature` $\leftrightarrow$ step |
-| **Tài liệu & Báo cáo** | Code-based report | Nghiệp vụ rõ ràng, dễ hiểu cho sếp/khách hàng |
-
----
-
-## 🏁 Tổng Kết & Mini Challenge
-
-### Thử thách nhỏ cho team tại chỗ:
-> Viết thêm 1 kịch bản kiểm tra: *"Gửi yêu cầu đăng ký nhưng để trống mật khẩu"* ➔ Kiểm chứng hệ thống phản hồi `400 Bad Request`.
-> - **Cặp Dev & Tester phối hợp:**
->   - Tester viết kịch bản trong `.feature`.
->   - Dev kiểm tra ánh xạ trong `.steps.js` hoặc chạy `npx bddgen`.
-
----
-
 # Q & A
 **Cảm ơn mọi người đã tham gia buổi chia sẻ!**
-*(Mã nguồn thực hành có sẵn trong repo)*

@@ -351,24 +351,7 @@ export const test = base.extend({
 export { expect } from '@playwright/test';</code></pre>
         </section>
 
-        <!-- SLIDE 11: BEST PRACTICE - TEST ISOLATION -->
-        <section>
-          <h3>🛡️ Bài Học Kỹ Thuật: Test Isolation & Parallel</h3>
-          <div class="warn-box">
-            <strong>❌ Sai lầm phổ biến:</strong> Tất cả test cases đều dùng chung 1 username cố định <code>"testuser"</code>.<br>
-            Khi bật <code>workers: 4</code>, Test A vừa tạo user thì Test B gửi lệnh xóa ➔ <strong>Flaky test ngẫu nhiên!</strong>
-          </div>
-          <div class="highlight-box">
-            <strong>✅ Giải pháp chuẩn mực:</strong> Mỗi test case tự sinh dữ liệu độc lập (Dynamic Test Data):
-            <pre style="margin: 4px 0;"><code class="language-javascript">const generateUser = () => ({
-  username: `autouser_${Date.now()}_${Math.floor(Math.random() * 10000)}`,
-  password: 'password123',
-});</code></pre>
-            <p style="margin: 4px 0 0 0; color: #50fa7b;">👉 Chạy bao nhiêu luồng song song cũng không bao giờ đụng độ dữ liệu!</p>
-          </div>
-        </section>
-
-        <!-- SLIDE 12: CẤU HÌNH WEBSERVER -->
+        <!-- SLIDE 11: CẤU HÌNH WEBSERVER -->
         <section>
           <h3>🤖 Tự Động Hóa Với <code>webServer</code></h3>
           <p style="font-size: 0.7em;">Đừng bắt Tester hoặc CI/CD phải mở terminal gõ <code>go run ./src</code>!</p>
@@ -618,7 +601,24 @@ Then('kết quả phải chứa token {string}',
           </div>
         </section>
 
-        <!-- SLIDE 12: ANTI-PATTERN TRONG BDD -->
+        <!-- SLIDE 17: BÀI HỌC KỸ THUẬT - TEST ISOLATION & PARALLEL -->
+        <section>
+          <h3>🛡️ Bài Học Kỹ Thuật: Test Isolation & Parallel</h3>
+          <div class="warn-box">
+            <strong>❌ Sai lầm phổ biến:</strong> Tất cả test cases đều dùng chung 1 username cố định <code>"testuser"</code>.<br>
+            Khi bật <code>workers: 4</code>, Test A vừa tạo user thì Test B gửi lệnh xóa ➔ <strong>Flaky test ngẫu nhiên!</strong>
+          </div>
+          <div class="highlight-box">
+            <strong>✅ Giải pháp chuẩn mực:</strong> Mỗi test case tự sinh dữ liệu độc lập (Dynamic Test Data):
+            <pre style="margin: 4px 0;"><code class="language-javascript">const generateUser = () => ({
+  username: `autouser_${Date.now()}_${Math.floor(Math.random() * 10000)}`,
+  password: 'password123',
+});</code></pre>
+            <p style="margin: 4px 0 0 0; color: #50fa7b;">👉 Chạy bao nhiêu luồng song song cũng không bao giờ đụng độ dữ liệu!</p>
+          </div>
+        </section>
+
+        <!-- SLIDE 18: ANTI-PATTERN TRONG BDD -->
         <section>
           <h3>⚠️ Anti-Pattern Cần Tránh: Biến Toàn Cục</h3>
           <div class="warn-box">
@@ -677,70 +677,10 @@ When('đăng nhập', async () => { authToken = res.token; });
           </table>
         </section>
 
-        <!-- SLIDE 14: SO SÁNH QUYẾT ĐỊNH -->
-        <section>
-          <h3>⚖️ Khi Nào Chọn Playwright Thuần vs BDD?</h3>
-          <table class="slide-table">
-            <thead>
-              <tr>
-                <th>Tiêu chí</th>
-                <th>Playwright Thuần</th>
-                <th>Playwright BDD</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Người dùng chính</strong></td>
-                <td>Dev, Automation QA</td>
-                <td>Manual QA, BA, Product Owner, Dev</td>
-              </tr>
-              <tr>
-                <td><strong>Mục đích kiểm thử</strong></td>
-                <td>API kỹ thuật, Microservices nội bộ</td>
-                <td>Luồng nghiệp vụ User Story, E2E flow</td>
-              </tr>
-              <tr>
-                <td><strong>Chi phí bảo trì</strong></td>
-                <td>Thấp (chỉ sửa code test)</td>
-                <td>Trung bình (duy trì cả .feature và .steps)</td>
-              </tr>
-              <tr>
-                <td><strong>Tài liệu & Báo cáo</strong></td>
-                <td>Code-oriented</td>
-                <td>Nghiệp vụ trực quan, thân thiện cho sếp</td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
-
-        <!-- SLIDE 15: MINI CHALLENGE -->
-        <section>
-          <h3>🧪 Mini Challenge Cho Cặp Dev & Tester</h3>
-          <div class="highlight-box">
-            <strong>Yêu cầu nghiệp vụ mới:</strong><br>
-            Kiểm tra kịch bản đăng ký nhưng gửi mật khẩu rỗng: <code>username="testuser"</code>, <code>password=""</code>.<br>
-            ➔ Hệ thống phải phản hồi HTTP <code>400 Bad Request</code> kèm thông báo <code>"Username và password không được để trống"</code>.
-          </div>
-          <div class="flex-container">
-            <div class="flex-col">
-              <strong style="color: #ff79c6;">Tester làm:</strong>
-              <p>Mở <code>auth.feature</code>, viết Scenario mới bằng Gherkin.</p>
-            </div>
-            <div class="flex-col">
-              <strong style="color: #bd93f9;">Dev làm:</strong>
-              <p>Chạy <code>npx bddgen</code> kiểm tra mapping và thực thi test!</p>
-            </div>
-          </div>
-        </section>
-
-        <!-- SLIDE 16: Q&A -->
+        <!-- SLIDE 20: Q&A -->
         <section data-background-gradient="linear-gradient(to bottom, #1e1f29, #282a36)">
           <h2>HỎI & ĐÁP (Q & A)</h2>
           <p style="color: #50fa7b; font-size: 1.2em; margin-top: 30px;">Cảm ơn mọi người đã tham gia buổi chia sẻ!</p>
-          <div style="font-size: 0.7em; color: #6272a4; margin-top: 50px;">
-            <p>Toàn bộ source code mẫu và tài liệu có sẵn trong repo:</p>
-            <p><code>automation-test-training/</code></p>
-          </div>
         </section>
 
       </div>
